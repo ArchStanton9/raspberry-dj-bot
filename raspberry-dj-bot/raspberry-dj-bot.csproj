@@ -6,4 +6,20 @@
     <RootNamespace>raspberry_dj_bot</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="config.yaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="config.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Telegram.Bot" Version="15.0.0" />
+    <PackageReference Include="Vostok.Configuration" Version="0.1.5" />
+    <PackageReference Include="Vostok.Configuration.Sources.Yaml" Version="0.1.0" />
+  </ItemGroup>
+
 </Project>
