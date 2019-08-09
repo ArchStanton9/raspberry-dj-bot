@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Text;
 using System.Threading.Tasks;
+using raspberry_dj_bot.Commands;
+using raspberry_dj_bot.Listener;
 using Telegram.Bot;
 using Vostok.Configuration;
 using Vostok.Configuration.Sources.Yaml;
@@ -32,7 +35,7 @@ namespace raspberry_dj_bot
             var log = new CompositeLog(fileLog, consoleLog);
             
             var bot = new ReactiveTelegramBot(client);
-            var listener = new TelegramMessageListener(log);
+            var listener = new TelegramMessageListener(log, new ConcurrentQueue<IBotCommand>(), null);
             using (bot.Subscribe(listener))
             {
                 client.StartReceiving();
