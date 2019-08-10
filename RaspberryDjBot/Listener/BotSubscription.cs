@@ -1,9 +1,9 @@
 ﻿using System;
-using raspberry_dj_bot.Primitives;
+using RaspberryDjBot.Common;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 
-namespace raspberry_dj_bot.Listener
+namespace RaspberryDjBot.Listener
 {
     public class BotSubscription : IDisposable
     {
@@ -25,11 +25,8 @@ namespace raspberry_dj_bot.Listener
 
         private void ClientOnOnMessage(object sender, MessageEventArgs e)
         {
-            
-
             observer.OnNext(new TelegramMessage
             {
-                Args = e,
                 Text = e.Message.Text,
                 ChatId = e.Message.Chat.Id
             });

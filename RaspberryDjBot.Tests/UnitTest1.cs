@@ -1,5 +1,6 @@
+using System.Threading.Tasks;
 using NUnit.Framework;
-using raspberry_dj_bot.Shell;
+using RaspberryDjBot.Shell;
 
 namespace Tests
 {
@@ -14,7 +15,16 @@ namespace Tests
         [Test]
         public void Test1()
         {
-            var output = ShellCommandRunner.RunCommand("youtube-dl", "-e", "--get-duration", "-g",
+            var output = ShellRunner.RunCommand("youtube-dl", "-e", "--get-duration", "-g",
+                "https://www.youtube.com/watch?v=guaEK62mxno");
+
+            var lines = output.Split("\n");
+        }
+
+        [Test]
+        public async Task Can_run_command_async()
+        {
+            var output = await ShellRunner.RunCommandAsync("youtube-dl", "-e", "--get-duration", "-g",
                 "https://www.youtube.com/watch?v=guaEK62mxno");
 
             var lines = output.Split("\n");

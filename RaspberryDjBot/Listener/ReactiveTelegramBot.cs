@@ -1,8 +1,8 @@
 ﻿using System;
-using raspberry_dj_bot.Primitives;
+using RaspberryDjBot.Common;
 using Telegram.Bot;
 
-namespace raspberry_dj_bot.Listener
+namespace RaspberryDjBot.Listener
 {
     public class ReactiveTelegramBot : IObservable<TelegramMessage>
     {

@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace raspberry_dj_bot.YouTube
+namespace RaspberryDjBot.Common
 {
-    public class YoutubeVideoInfo
+    public class MediaContent
     {
         public string Title { get; set; }
 

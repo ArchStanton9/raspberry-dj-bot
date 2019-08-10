@@ -1,4 +1,4 @@
-﻿namespace raspberry_dj_bot
+﻿namespace RaspberryDjBot
 {
     public class BotConfiguration
     {
