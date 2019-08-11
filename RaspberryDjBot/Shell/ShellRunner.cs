@@ -12,7 +12,9 @@ namespace RaspberryDjBot.Shell
             {
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
-                FileName = command
+                FileName = command,
+                RedirectStandardInput = true,
+                CreateNoWindow = true
             };
 
             foreach (var arg in args)
@@ -45,9 +47,10 @@ namespace RaspberryDjBot.Shell
                 EnableRaisingEvents = true
             };
 
-            process.Exited += async (sender, e) =>
+
+            process.Exited += (sender, e) =>
             {
-                var output = await process.StandardOutput.ReadToEndAsync();
+                var output = process.StandardOutput.ReadToEnd();
                 tcs.SetResult(output);
                 process.Dispose();
             };

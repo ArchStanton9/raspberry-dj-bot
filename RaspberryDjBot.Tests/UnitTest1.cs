@@ -24,10 +24,18 @@ namespace Tests
         [Test]
         public async Task Can_run_command_async()
         {
-            var output = await ShellRunner.RunCommandAsync("youtube-dl", "-e", "--get-duration", "-g",
-                "https://www.youtube.com/watch?v=guaEK62mxno");
+            var t = Task.Run(async () =>
+            {
+                var output = await ShellRunner.RunCommandAsync("youtube-dl", "-e", "--get-duration", "-g",
+                    "https://www.youtube.com/watch?v=guaEK62mxno");
+                
+                return 2;
+            });
 
-            var lines = output.Split("\n");
+
+            t.Wait();
+
+            //var lines = output.Split("\n");
         }
     }
 }

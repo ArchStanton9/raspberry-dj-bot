@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
+using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using MihaZupan;
 using RaspberryDjBot.Common;
 using RaspberryDjBot.Listener;
 using Telegram.Bot;
@@ -23,8 +26,8 @@ namespace RaspberryDjBot
             var provider = new ConfigurationProvider();
             provider.SetupSourceFor<BotConfiguration>(new YamlFileSource("config.yaml"));
             var config = provider.Get<BotConfiguration>();
-
-            var client = new TelegramBotClient(config.AccessToken);
+            
+            var proxy = new HttpToSocks5Proxy(config.ProxyHost, config.ProxyPort, config.ProxyLogin, config.ProxyPassword);
             
             var fileLog = new FileLog(() => new FileLogSettings
             {
@@ -34,7 +37,11 @@ namespace RaspberryDjBot
 
             var consoleLog = new ConsoleLog(new ConsoleLogSettings {ColorsEnabled = true});
             var log = new CompositeLog(fileLog, consoleLog);
-            
+          
+            var client = new TelegramBotClient(config.AccessToken, proxy);
+            var me = client.GetMeAsync().GetAwaiter().GetResult();
+            log.Info(me.ToString());
+
             var bot = new ReactiveTelegramBot(client);
             var queue = new ConcurrentQueue<MediaContent>();
             var listener = new TelegramMessageListener(log, queue);

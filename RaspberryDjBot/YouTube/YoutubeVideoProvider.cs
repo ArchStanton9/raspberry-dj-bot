@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using RaspberryDjBot.Common;
@@ -10,12 +11,13 @@ namespace RaspberryDjBot.YouTube
     {
         public async Task<MediaContent> GetYoutubeVideo(Uri url)
         {
+            var source = url.ToString();
             var output = await ShellRunner.RunCommandAsync("youtube-dl",
                 "-e",
                 "--get-duration",
                 "-g",
-                url.ToString()
-            );
+                "https://www.youtube.com/watch?v=guaEK62mxno" //source
+            ).ConfigureAwait(false);
 
             var lines = output.Split("\n");
             var info = new MediaContent();
