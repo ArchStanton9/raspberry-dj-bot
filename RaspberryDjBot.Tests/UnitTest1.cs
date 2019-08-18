@@ -12,30 +12,14 @@ namespace Tests
 
         }
 
-        [Test]
-        public void Test1()
-        {
-            var output = ShellRunner.RunCommand("youtube-dl", "-e", "--get-duration", "-g",
-                "https://www.youtube.com/watch?v=guaEK62mxno");
-
-            var lines = output.Split("\n");
-        }
 
         [Test]
         public async Task Can_run_command_async()
         {
-            var t = Task.Run(async () =>
-            {
-                var output = await ShellRunner.RunCommandAsync("youtube-dl", "-e", "--get-duration", "-g",
-                    "https://www.youtube.com/watch?v=guaEK62mxno");
-                
-                return 2;
-            });
+            var output = await ShellRunner.RunCommandAsync("youtube-dl", "-e", "--get-duration", "-g",
+                "https://www.youtube.com/watch?v=guaEK62mxno");
 
-
-            t.Wait();
-
-            //var lines = output.Split("\n");
+            var lines = output.Split("\n");
         }
     }
 }

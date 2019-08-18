@@ -1,63 +1,124 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Diagnostics;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace RaspberryDjBot.Shell
 {
     public static class ShellRunner
     {
-        private static ProcessStartInfo CreateStartInfo(string command, IEnumerable<string> args)
+        public static async Task<string> RunCommandAsync(string command, params string[] args)
         {
-            var info = new ProcessStartInfo
-            {
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                FileName = command,
-                RedirectStandardInput = true,
-                CreateNoWindow = true
-            };
-
-            foreach (var arg in args)
-                info.ArgumentList.Add(arg);
-
-            return info;
+            var result = await ExecuteShellCommand(command, string.Join(" ", args), 500000);
+            return result.Output;
         }
 
-        public static string RunCommand(string command, params string[] args)
+        public static async Task<ShellCommandResult> ExecuteShellCommand(string command, string arguments, int timeout)
         {
-            var process = new Process
+            var result = new ShellCommandResult();
+
+            using (var process = new Process())
             {
-                StartInfo = CreateStartInfo(command, args)
-            };
+                // If you run bash-script on Linux it is possible that ExitCode can be 255.
+                // To fix it you can try to add '#!/bin/bash' header to the script.
 
-            process.Start();
+                process.StartInfo.FileName = command;
+                process.StartInfo.Arguments = arguments;
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardInput = true;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.CreateNoWindow = true;
 
-            var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
+                var outputBuilder = new StringBuilder();
+                var outputCloseEvent = new TaskCompletionSource<bool>();
 
-            return output;
+                process.OutputDataReceived += (s, e) =>
+                {
+                    // The output stream has been closed i.e. the process has terminated
+                    if (e.Data == null)
+                    {
+                        outputCloseEvent.SetResult(true);
+                    }
+                    else
+                    {
+                        outputBuilder.AppendLine(e.Data);
+                    }
+                };
+
+                var errorBuilder = new StringBuilder();
+                var errorCloseEvent = new TaskCompletionSource<bool>();
+
+                process.ErrorDataReceived += (s, e) =>
+                {
+                    // The error stream has been closed i.e. the process has terminated
+                    if (e.Data == null)
+                    {
+                        errorCloseEvent.SetResult(true);
+                    }
+                    else
+                    {
+                        errorBuilder.AppendLine(e.Data);
+                    }
+                };
+
+                bool isStarted;
+
+                try
+                {
+                    isStarted = process.Start();
+                }
+                catch (Exception error)
+                {
+                    // Usually it occurs when an executable file is not found or is not executable
+
+                    result.Completed = true;
+                    result.ExitCode = -1;
+                    result.Output = error.Message;
+
+                    isStarted = false;
+                }
+
+                if (isStarted)
+                {
+                    // Reads the output stream first and then waits because deadlocks are possible
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+
+                    // Creates task to wait for process exit using timeout
+                    var waitForExit = WaitForExitAsync(process, timeout);
+
+                    // Create task to wait for process exit and closing all output streams
+                    var processTask = Task.WhenAll(waitForExit, outputCloseEvent.Task, errorCloseEvent.Task);
+
+                    // Waits process completion and then checks it was not completed by timeout
+                    if (await Task.WhenAny(Task.Delay(timeout), processTask) == processTask && waitForExit.Result)
+                    {
+                        result.Completed = true;
+                        result.ExitCode = process.ExitCode;
+                        result.Output = $"{outputBuilder}{errorBuilder}";
+                    }
+                    else
+                    {
+                        try
+                        {
+                            // Kill hung process
+                            process.Kill();
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+            }
+
+            return result;
         }
 
-        public static Task<string> RunCommandAsync(string command, params string[] args)
+
+        private static Task<bool> WaitForExitAsync(Process process, int timeout)
         {
-            var tcs = new TaskCompletionSource<string>();
-            var process = new Process
-            {
-                StartInfo = CreateStartInfo(command, args),
-                EnableRaisingEvents = true
-            };
-
-
-            process.Exited += (sender, e) =>
-            {
-                var output = process.StandardOutput.ReadToEnd();
-                tcs.SetResult(output);
-                process.Dispose();
-            };
-
-            process.Start();
-
-            return tcs.Task;
+            return Task.Run(() => process.WaitForExit(timeout));
         }
     }
 }

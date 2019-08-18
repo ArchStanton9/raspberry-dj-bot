@@ -12,14 +12,14 @@ namespace RaspberryDjBot.YouTube
         public async Task<MediaContent> GetYoutubeVideo(Uri url)
         {
             var source = url.ToString();
-            var output = await ShellRunner.RunCommandAsync("youtube-dl",
-                "-e",
-                "--get-duration",
-                "-g",
-                "https://www.youtube.com/watch?v=guaEK62mxno" //source
-            ).ConfigureAwait(false);
+            var result = await ShellRunner.ExecuteShellCommand(
+                "youtube-dl",
+                $"-e --get-duration -g {source}", 30000);
 
-            var lines = output.Split("\n");
+            if (result.ExitCode != 0)
+                throw new Exception("Failed to load content");
+
+            var lines = result.Output.Split("\n");
             var info = new MediaContent();
             info.Title = lines[0];
             info.Source = new Uri(lines[1]);
