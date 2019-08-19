@@ -28,7 +28,8 @@ namespace RaspberryDjBot.Listener
             observer.OnNext(new TelegramMessage
             {
                 Text = e.Message.Text,
-                ChatId = e.Message.Chat.Id
+                ChatId = e.Message.Chat.Id,
+                UserName = string.Join(" ", e.Message.Contact.FirstName, e.Message.Contact.LastName)
             });
         }
 

@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
+using RaspberryDjBot.Commands;
 using RaspberryDjBot.Common;
 using RaspberryDjBot.Listener;
 using RaspberryDjBot.Player;
@@ -19,12 +19,11 @@ namespace RaspberryDjBot
     public class Program
     {
         // ReSharper disable once ArrangeTypeMemberModifiers
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             var provider = new ConfigurationProvider();
             provider.SetupSourceFor<BotConfiguration>(new YamlFileSource("config.yaml"));
             var config = provider.Get<BotConfiguration>();
-
 
             var fileLog = new FileLog(() => new FileLogSettings
             {
@@ -41,16 +40,22 @@ namespace RaspberryDjBot
 
             var bot = new ReactiveTelegramBot(client);
             var queue = new ConcurrentQueue<MediaContent>();
-            var listener = new TelegramMessageListener(log, queue, new List<IMediaContentProvider>()
-            {
-                new YoutubeVideoProvider()
-            });
+            var player = new OmxShellMediaPlayer(queue, log);
+
+            var listener = new TelegramMessageListener(log, queue,
+                new List<IMediaContentProvider>
+                {
+                    new YoutubeVideoProvider()
+                },
+                new List<ICommandHandler>
+                {
+                    new PlayerCommandHandler(player)
+                });
 
             using (bot.Subscribe(listener))
             {
                 client.StartReceiving();
-                var player = new OmxShellMediaPlayer(queue);
-                player.Play();
+                player.Start();
 
                 Console.ReadLine();
             }
