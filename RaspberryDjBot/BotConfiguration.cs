@@ -4,6 +4,9 @@
     {
         public string AccessToken { get; set; }
 
+
+        public bool UseProxy { get; set; }
+
         public string ProxyHost { get; set; }
 
         public int ProxyPort { get; set; }

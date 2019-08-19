@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.ComponentModel.DataAnnotations;
-using System.Net;
-using System.Net.Http;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using MihaZupan;
 using RaspberryDjBot.Common;
 using RaspberryDjBot.Listener;
-using Telegram.Bot;
+using RaspberryDjBot.Player;
+using RaspberryDjBot.Providers;
 using Vostok.Configuration;
 using Vostok.Configuration.Sources.Yaml;
 using Vostok.Logging.Abstractions;
@@ -26,9 +24,8 @@ namespace RaspberryDjBot
             var provider = new ConfigurationProvider();
             provider.SetupSourceFor<BotConfiguration>(new YamlFileSource("config.yaml"));
             var config = provider.Get<BotConfiguration>();
-            
-            var proxy = new HttpToSocks5Proxy(config.ProxyHost, config.ProxyPort, config.ProxyLogin, config.ProxyPassword);
-            
+
+
             var fileLog = new FileLog(() => new FileLogSettings
             {
                 FilePath = "Logs/bot.log",
@@ -37,18 +34,22 @@ namespace RaspberryDjBot
 
             var consoleLog = new ConsoleLog(new ConsoleLogSettings {ColorsEnabled = true});
             var log = new CompositeLog(fileLog, consoleLog);
-          
-            var client = new TelegramBotClient(config.AccessToken, proxy);
+
+            var client = TelegramClientBuilder.BuildClient(config);
             var me = client.GetMeAsync().GetAwaiter().GetResult();
             log.Info(me.ToString());
 
             var bot = new ReactiveTelegramBot(client);
             var queue = new ConcurrentQueue<MediaContent>();
-            var listener = new TelegramMessageListener(log, queue);
+            var listener = new TelegramMessageListener(log, queue, new List<IMediaContentProvider>()
+            {
+                new YoutubeVideoProvider()
+            });
+
             using (bot.Subscribe(listener))
             {
                 client.StartReceiving();
-                var player = new MediaPlayer(queue);
+                var player = new OmxShellMediaPlayer(queue);
                 player.Play();
 
                 Console.ReadLine();

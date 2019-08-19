@@ -4,15 +4,15 @@ using System.Threading.Tasks;
 using RaspberryDjBot.Common;
 using RaspberryDjBot.Shell;
 
-namespace RaspberryDjBot
+namespace RaspberryDjBot.Player
 {
-    public class MediaPlayer
+    public class OmxShellMediaPlayer : IMediaPlayer
     {
         private readonly IProducerConsumerCollection<MediaContent> playbackQueue;
         private readonly CancellationTokenSource tokenSource;
         private Task playerTask;
 
-        public MediaPlayer(IProducerConsumerCollection<MediaContent> playbackQueue)
+        public OmxShellMediaPlayer(IProducerConsumerCollection<MediaContent> playbackQueue)
         {
             this.playbackQueue = playbackQueue;
             tokenSource = new CancellationTokenSource();

@@ -1,15 +1,28 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using RaspberryDjBot.Common;
 using RaspberryDjBot.Shell;
 
-namespace RaspberryDjBot.YouTube
+namespace RaspberryDjBot.Providers
 {
-    public class YoutubeVideoProvider
+    public class YoutubeVideoProvider : IMediaContentProvider
     {
-        public async Task<MediaContent> GetYoutubeVideo(Uri url)
+        private static readonly Regex youtubeUrlRegex = new Regex(@".+(youtube\.com)|(youtu\.be).+",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        public bool TryParseUrl(string text, out Uri url)
+        {
+            var match = youtubeUrlRegex.Match(text);
+            if (match.Success && Uri.TryCreate(match.Value, UriKind.Absolute, out url))
+                return true;
+
+            url = default(Uri);
+            return false;
+        }
+
+        public async Task<MediaContent> GetMediaContent(Uri url)
         {
             var source = url.ToString();
             var result = await ShellRunner.ExecuteShellCommand(
