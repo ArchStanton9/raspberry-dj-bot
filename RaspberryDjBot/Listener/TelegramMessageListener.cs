@@ -56,6 +56,7 @@ namespace RaspberryDjBot.Listener
                         {
                             handler.Handle(text);
                             log.Info("Handle command {text} from user {user}", text, message.UserName);
+                            return;
                         }
                     }
                 }
@@ -77,10 +78,12 @@ namespace RaspberryDjBot.Listener
                             log.Debug("Add media content to queue");
                         else
                             log.Warn("Could not add media content to queue.");
+
+                        return;
                     }
                     catch (Exception ex)
                     {
-                        log.Error(ex, "Error while getting media content from '{0}'", url);
+                        log.Error(ex, "Error while getting media content from '{0}'. {1}", url, ex.Message);
                     }
                 }
             }

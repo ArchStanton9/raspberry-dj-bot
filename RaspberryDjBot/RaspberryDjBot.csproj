@@ -8,10 +8,14 @@
 
   <ItemGroup>
     <None Remove="config.yaml" />
+    <None Remove="dbuscontrol.sh" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="config.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dbuscontrol.sh">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

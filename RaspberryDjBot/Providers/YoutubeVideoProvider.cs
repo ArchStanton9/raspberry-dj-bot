@@ -9,7 +9,7 @@ namespace RaspberryDjBot.Providers
 {
     public class YoutubeVideoProvider : IMediaContentProvider
     {
-        private static readonly Regex youtubeUrlRegex = new Regex(@".+(youtube\.com)|(youtu\.be).+",
+        private static readonly Regex youtubeUrlRegex = new Regex(@".+(youtube|youtu)\.(com|be).+",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         public bool TryParseUrl(string text, out Uri url)
@@ -27,10 +27,10 @@ namespace RaspberryDjBot.Providers
             var source = url.ToString();
             var result = await ShellRunner.ExecuteShellCommand(
                 "youtube-dl",
-                $"-e --get-duration -g {source}", 30000);
+                $"-e --get-duration -g -f best {source}", 30000);
 
             if (result.ExitCode != 0)
-                throw new Exception("Failed to load content");
+                throw new Exception($"Failed to load content. {result.Output}");
 
             var lines = result.Output.Split("\n");
             var info = new MediaContent();

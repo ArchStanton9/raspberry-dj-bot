@@ -29,7 +29,7 @@ namespace RaspberryDjBot.Listener
             {
                 Text = e.Message.Text,
                 ChatId = e.Message.Chat.Id,
-                UserName = string.Join(" ", e.Message.Contact.FirstName, e.Message.Contact.LastName)
+                UserName = $"{e.Message.Contact?.FirstName} {e.Message.Contact?.LastName}"
             });
         }
 
